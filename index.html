@@ -8,34 +8,56 @@
 
     <title>hmm.jp — Ippei Ogiwara</title>
 
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.classless.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2.1.1/css/pico.min.css">
+
+    <style>
+      .feed-item {
+        gap: 1rem;
+        align-items: start;
+      }
+
+      .feed-item h3 {
+        font-size: 1rem;
+        line-height: 1.35;
+      }
+
+      .feed-item hgroup {
+        margin-bottom: 0.5rem;
+      }
+
+      .feed-item hgroup > .feed-meta:last-child {
+        font-size: 0.75rem;
+      }
+
+      .feed-item p {
+        font-size: 0.875rem;
+      }
+
+      @media (min-width: 768px) {
+        .feed-item {
+          grid-template-columns: 280px minmax(0, 1fr);
+        }
+      }
+    </style>
   </head>
 
   <body>
-    <header>
+    <header class="container">
       <hgroup>
         <h1>hmm.jp</h1>
         <p>Ippei Ogiwara, a corporate engineer.</p>
       </hgroup>
       <nav aria-label="Primary navigation">
         <ul>
-          <li><a href="#feeds">Feeds</a></li>
           <li><a href="#writing">Writing</a></li>
           <li><a href="#social">Social</a></li>
           <li><a href="#archive">Archive</a></li>
+          <li><a href="#feeds">Feeds</a></li>
         </ul>
       </nav>
     </header>
 
-    <main>
-      <section id="feeds" aria-labelledby="feeds-heading">
-        <h2 id="feeds-heading">Feeds</h2>
-        <p>My latest posts from Hatena Blog, Zenn, and Qiita.</p>
-        <div id="feed-items" aria-live="polite" aria-busy="true">
-          <p id="feed-status">Loading latest posts…</p>
-        </div>
-      </section>
-
+    <main class="container">
       <section id="writing">
         <h2>Writing</h2>
         <ul>
@@ -62,9 +84,17 @@
           <li><a href="https://www.tumblr.com/iogi-live-event">Live events log</a></li>
         </ul>
       </section>
+
+      <section id="feeds" aria-labelledby="feeds-heading">
+        <h2 id="feeds-heading">Feeds</h2>
+        <p>My latest posts from Hatena Blog, Zenn, and Qiita.</p>
+        <div id="feed-items" aria-live="polite" aria-busy="true">
+          <p id="feed-status">Loading latest posts…</p>
+        </div>
+      </section>
     </main>
 
-    <footer>
+    <footer class="container">
       <small>© Ippei Ogiwara</small>
     </footer>
 
@@ -87,17 +117,25 @@
 
           for (const item of items) {
             const article = document.createElement("article");
+            const content = document.createElement("div");
 
             if (item.image) {
+              const layout = document.createElement("div");
               const imageLink = document.createElement("a");
               const image = document.createElement("img");
+              layout.className = "grid feed-item";
               imageLink.href = item.url;
               image.src = item.image;
               image.alt = "";
               image.loading = "lazy";
               image.decoding = "async";
+              image.width = 280;
+              image.height = 147;
               imageLink.append(image);
-              article.append(imageLink);
+              layout.append(imageLink, content);
+              article.append(layout);
+            } else {
+              article.append(content);
             }
 
             const heading = document.createElement("hgroup");
@@ -108,14 +146,17 @@
             link.href = item.url;
             link.textContent = item.title;
             title.append(link);
+            metadata.className = "feed-meta";
             metadata.textContent = `${item.source} · ${dateFormatter.format(new Date(item.date))}`;
             heading.append(title, metadata);
-            article.append(heading);
+            content.append(heading);
 
             if (item.description) {
               const description = document.createElement("p");
-              description.textContent = item.description;
-              article.append(description);
+              description.textContent = item.description.length > 160
+                ? `${item.description.slice(0, 160)}…`
+                : item.description;
+              content.append(description);
             }
 
             fragment.append(article);
